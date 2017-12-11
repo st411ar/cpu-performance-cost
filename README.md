@@ -1,6 +1,10 @@
 # cpu-performance-cost
 Compare CPUs performance cost on https://www.nix.ru/hardware-review/cpu-benchmark-performance.html
 
+## Requirements
+* Java 8
+* Maven 3
+
 ## Usage
 ### Build
 `mvn clean package`
