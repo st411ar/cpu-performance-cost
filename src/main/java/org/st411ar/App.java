@@ -11,7 +11,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class App {
-	private static final String PATH = "https://www.nix.ru/hardware-review/cpu-benchmark-performance.html";
+	private static final String PATH = 
+            "https://www.nix.ru/hardware-review/cpu-benchmark-performance.html";
 
 	private static final int CELL_INDEX_RANK = 0;
 	private static final int CELL_INDEX_NAME = 1;
@@ -21,42 +22,70 @@ public class App {
     public static void main( String[] args ) {
     	try {
 	    	Document doc = Jsoup.connect(PATH).get();
-            Elements rows = doc.select("#PriceTable").stream()
-                    .findFirst()
-                    .map(table -> table.children())
-                    .get().stream()
-                    .findFirst()
-                    .map(tableBody -> tableBody.children())
-                    .orElse(new Elements());
-
-    		List<CpuModel> cpus = new ArrayList<>();
-    		for (int i = 1; i < rows.size(); i++) {
-    			Element row = rows.get(i);
-    			Elements cells = row.children();
-
-    			int rank = Integer.parseInt(cells.get(CELL_INDEX_RANK).text());
-
-    			String name = cells.get(CELL_INDEX_NAME).text();
-
-    			String parsedPerformance = cells.get(CELL_INDEX_PERFORMANCE).text();
-    			String formatedPerformance = parsedPerformance.substring(0, parsedPerformance.length() - 1);
-    			double performance = Double.parseDouble(formatedPerformance);
-
-    			String parsedPrice = cells.get(CELL_INDEX_PRICE).text();
-    			String formatedPrice = parsedPrice.replace(" ", "");
-    			int price = Integer.parseInt(formatedPrice);
-
-    			cpus.add(new CpuModel(rank, name, performance, price));
-    		}
-
+            Elements rows = parseRows(doc);
+    		List<CpuModel> cpus = parseCpuModels(rows);
     		Collections.sort(cpus, new PerformanceCostComparator());
-    		int performanceCostRank = 1;
-    		for (CpuModel cpu : cpus) {
-	    		System.out.println(performanceCostRank++ + "\t" + cpu);
-    		}
+            printCpus(cpus);
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
+    }
+
+    private static Elements parseRows(Document doc) {
+        return doc.select("#PriceTable")
+                .stream()
+                .findFirst()
+                .map(table -> table.children())
+                .orElse(new Elements())
+                .stream()
+                .findFirst()
+                .map(tableBody -> tableBody.children())
+                .orElse(new Elements());
+    }
+
+    private static List<CpuModel> parseCpuModels(Elements rows) {
+        List<CpuModel> cpus = new ArrayList<>();
+        for (int i = 1; i < rows.size(); i++) {
+            Elements cells = rows.get(i).children();
+            CpuModel cpu = parseCpuModel(cells);
+            cpus.add(cpu);
+        }
+        return cpus;
+    }
+
+    private static CpuModel parseCpuModel(Elements cells) {
+        int rank = parseRank(cells);
+        String name = parseName(cells);
+        double performance = parsePerformance(cells);
+        int price = parsePrice(cells);
+        return new CpuModel(rank, name, performance, price);
+    }
+
+    private static int parseRank(Elements cells) {
+        return Integer.parseInt(cells.get(CELL_INDEX_RANK).text());
+    }
+
+    private static String parseName(Elements cells) {
+        return cells.get(CELL_INDEX_NAME).text();
+    }
+
+    private static Double parsePerformance(Elements cells) {
+        String parsed = cells.get(CELL_INDEX_PERFORMANCE).text();
+        String formated = parsed.substring(0, parsed.length() - 1);
+        return Double.parseDouble(formated);
+    }
+
+    private static int parsePrice(Elements cells) {
+        String parsed = cells.get(CELL_INDEX_PRICE).text();
+        String formated = parsed.replace(" ", "");
+        return Integer.parseInt(formated);
+    }
+
+    private static void printCpus(List<CpuModel> cpus) {
+        int performanceCostRank = 1;
+        for (CpuModel cpu : cpus) {
+            System.out.println(performanceCostRank++ + "\t" + cpu);
+        }
     }
 
 }
