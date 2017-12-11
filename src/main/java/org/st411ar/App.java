@@ -21,9 +21,13 @@ public class App {
     public static void main( String[] args ) {
     	try {
 	    	Document doc = Jsoup.connect(PATH).get();
-    		Element table = doc.select("#PriceTable").first();
-    		Element tableBody = table.children().first();
-    		Elements rows = tableBody.children();
+            Elements rows = doc.select("#PriceTable").stream()
+                    .findFirst()
+                    .map(table -> table.children())
+                    .get().stream()
+                    .findFirst()
+                    .map(tableBody -> tableBody.children())
+                    .orElse(new Elements());
 
     		List<CpuModel> cpus = new ArrayList<>();
     		for (int i = 1; i < rows.size(); i++) {
