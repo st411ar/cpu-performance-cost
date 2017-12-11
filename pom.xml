@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.st411ar</groupId>
-  <artifactId>cpu-performance</artifactId>
+  <artifactId>cpu-performance-cost</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>cpu-performance</name>
+  <name>cpu-performance-cost</name>
   <url>http://maven.apache.org</url>
 
   <properties>
